@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureMailScope | Command Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans min-h-screen">
+    
+    <header class="bg-gray-800 border-b border-gray-700 py-4 px-6 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <svg class="w-8 h-8 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <h1 class="text-2xl font-bold tracking-wider text-white">SECURE<span class="text-cyan-500">MAIL</span>SCOPE</h1>
+        </div>
+        <div class="text-xs text-gray-400 bg-gray-900 px-3 py-1 rounded border border-gray-700">
+            AIR-GAPPED MODE ENFORCED
+        </div>
+    </header>
+
+    <main class="p-6 grid grid-cols-12 gap-6">
+        
+        <!-- Left Column: Upload & CSPI Gauge -->
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Ingestion Zone -->
+            <section class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+                <h2 class="text-lg font-semibold mb-4 text-gray-300">Target Ingestion Zone</h2>
+                
+                <div id="drop-zone" class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-cyan-500 transition-colors cursor-pointer bg-gray-900">
+                    <p class="text-sm text-gray-400 mb-2">Drag & Drop .pcap here</p>
+                    <input type="file" id="file-input" class="hidden" accept=".pcap,.cap,.dmp">
+                    <button class="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded text-white transition-colors" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                </div>
+                
+                <div class="mt-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Demo Quick-Loads</p>
+                    <div class="flex flex-col gap-2">
+                        <button class="text-left text-sm bg-gray-900 hover:bg-gray-700 p-2 rounded border border-gray-700 text-gray-300 transition-colors demo-btn" data-file="mitm_strip_attack.pcap">
+                            ⚠️ MITM Stripping Attack
+                        </button>
+                        <button class="text-left text-sm bg-gray-900 hover:bg-gray-700 p-2 rounded border border-gray-700 text-gray-300 transition-colors demo-btn" data-file="vulnerable_legacy.pcap">
+                            ☢️ Vulnerable Legacy (3DES)
+                        </button>
+                        <button class="text-left text-sm bg-gray-900 hover:bg-gray-700 p-2 rounded border border-gray-700 text-gray-300 transition-colors demo-btn" data-file="hardened_defense.pcap">
+                            🛡️ Hardened Defense (TLS 1.3)
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- CSPI Gauge -->
+            <section class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md flex-grow flex flex-col items-center justify-center relative">
+                <h2 class="text-lg font-semibold text-gray-300 absolute top-5 left-5">CSPI Posture Index</h2>
+                <div class="w-48 h-48 mt-8 relative">
+                    <canvas id="cspi-chart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span id="cspi-score-text" class="text-4xl font-bold text-white">--</span>
+                        <span id="cspi-status-text" class="text-xs uppercase tracking-widest text-gray-400 mt-1">AWAITING DATA</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 text-center">Cryptographic Security Posture Index<br>(0-100)</p>
+            </section>
+            
+        </div>
+        
+        <!-- Right Column: Telemetry & Remediation -->
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Telemetry Alerts -->
+            <div id="alert-banner" class="hidden bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">CRITICAL THREAT:</strong>
+                <span class="block sm:inline" id="alert-message">Active STARTTLS stripping detected on stream!</span>
+            </div>
+
+            <!-- Telemetry Table -->
+            <section class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md flex-grow overflow-hidden flex flex-col">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-lg font-semibold text-gray-300">Protocol & Cipher Telemetry</h2>
+                    <span class="text-xs text-gray-500" id="session-count">0 Sessions Monitored</span>
+                </div>
+                
+                <div class="overflow-x-auto flex-grow">
+                    <table class="w-full text-sm text-left text-gray-400">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-900">
+                            <tr>
+                                <th class="px-4 py-3">Source IP</th>
+                                <th class="px-4 py-3">Target</th>
+                                <th class="px-4 py-3">Protocol</th>
+                                <th class="px-4 py-3">TLS Ver</th>
+                                <th class="px-4 py-3">Cipher Suite</th>
+                                <th class="px-4 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telemetry-table" class="divide-y divide-gray-700">
+                            <tr>
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-600">No data. Ingest a PCAP to begin analysis.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Remediation & Reports -->
+            <section class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-md">
+                <h2 class="text-lg font-semibold text-gray-300 mb-4">Remediation & CBOM Center</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <a href="/api/v1/patch/postfix" class="bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded p-4 flex flex-col items-center justify-center gap-2 transition-colors group">
+                        <svg class="w-8 h-8 text-blue-400 group-hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <span class="text-sm font-medium">Postfix Patch</span>
+                    </a>
+                    
+                    <a href="/api/v1/patch/dovecot" class="bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded p-4 flex flex-col items-center justify-center gap-2 transition-colors group">
+                        <svg class="w-8 h-8 text-blue-400 group-hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <span class="text-sm font-medium">Dovecot Patch</span>
+                    </a>
+                    
+                    <a href="/api/v1/cbom" class="bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded p-4 flex flex-col items-center justify-center gap-2 transition-colors group">
+                        <svg class="w-8 h-8 text-purple-400 group-hover:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <span class="text-sm font-medium">CycloneDX CBOM</span>
+                    </a>
+                    
+                    <a href="/api/v1/report/pdf" class="bg-gray-900 hover:bg-gray-700 border border-gray-600 rounded p-4 flex flex-col items-center justify-center gap-2 transition-colors group">
+                        <svg class="w-8 h-8 text-red-400 group-hover:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span class="text-sm font-medium">Audit PDF</span>
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

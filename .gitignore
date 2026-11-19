@@ -1,0 +1,76 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# ===========================
+# IDE & Editor
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Project-specific
+# ===========================
+# Uploaded PCAPs (user data)
+uploads/*.pcap
+uploads/*.cap
+uploads/*.dmp
+
+# DuckDB database files
+*.duckdb
+*.duckdb.wal
+
+# Generated reports
+*.pdf
+
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+.env.local
+.env.production
+
+# ===========================
+# AI Agent configs (not needed in repo)
+# ===========================
+.antigravity/
+.agents/
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/
+
+# ===========================
+# Node (if any frontend build tools added later)
+# ===========================
+node_modules/
+package-lock.json
+
+# ===========================
+# OS files
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini

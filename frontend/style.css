@@ -1,0 +1,40 @@
+/* Custom styles for dashboard micro-animations and specific tweaks */
+
+body {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #111827;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111827; 
+}
+ 
+::-webkit-scrollbar-thumb {
+    background: #4B5563; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6B7280; 
+}
+
+.flash-alert {
+    animation: flash 2s infinite;
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+tr {
+    transition: background-color 0.2s ease;
+}
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
